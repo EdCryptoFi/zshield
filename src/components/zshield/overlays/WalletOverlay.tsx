@@ -7,7 +7,14 @@ function randHex(len: number) {
   return Array.from({ length: len }, () => '0123456789abcdef'[Math.floor(Math.random() * 16)]).join('')
 }
 
-const STEPS = ['Sampling entropy', 'Deriving spending key', 'Computing diversifier', 'Encoding zauth1 address', 'Building did:zcash document', 'Signing genesis claim']
+const STEPS = [
+  'Sampling entropy sources',
+  'Deriving spending key (Ed25519)',
+  'Computing shielded diversifier',
+  'Encoding bech32m address',
+  'Building did:zcash document',
+  'Signing genesis claim',
+]
 
 interface WalletResult {
   address: string
@@ -17,41 +24,49 @@ interface WalletResult {
   seed: string[]
 }
 
-function Field({ label, value, mono = false, primary = false, mask = false }: {
-  label: string; value: string; mono?: boolean; primary?: boolean; mask?: boolean
+function CopyField({ label, value, mask = false, highlight = false }: {
+  label: string; value: string; mask?: boolean; highlight?: boolean
 }) {
   const [revealed, setRevealed] = useState(!mask)
   const [copied, setCopied] = useState(false)
-  const display = mask && !revealed ? '•'.repeat(Math.min(value.length, 48)) : value
+  const display = mask && !revealed ? '•'.repeat(Math.min(value.length, 52)) : value
   const copy = () => { navigator.clipboard?.writeText(value); setCopied(true); setTimeout(() => setCopied(false), 1200) }
 
   return (
     <div>
-      <div className="micro" style={{ marginBottom: 5 }}>{label}</div>
+      <div style={{ fontFamily: 'var(--font-mono)', fontSize: 9, color: 'var(--ink-mute)', letterSpacing: '0.26em', textTransform: 'uppercase', marginBottom: 5 }}>{label}</div>
       <div style={{
-        display: 'flex', alignItems: 'center', gap: 8,
-        padding: '10px 12px',
-        border: `1px solid ${primary ? 'var(--gold)' : 'var(--line)'}`,
-        background: primary ? 'rgba(244,183,40,0.05)' : 'transparent',
+        display: 'flex', alignItems: 'center', gap: 8, padding: '9px 12px',
+        border: `1px solid ${highlight ? 'var(--gold)' : 'var(--line)'}`,
+        background: highlight ? 'rgba(244,183,40,0.05)' : 'transparent',
       }}>
         <span style={{
-          flex: 1, fontSize: 12, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
-          fontFamily: mono ? 'var(--font-mono)' : 'inherit',
-          color: primary ? 'var(--gold-bright)' : 'var(--ink)',
+          flex: 1, fontFamily: 'var(--font-mono)', fontSize: 12, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
+          color: highlight ? 'var(--gold-bright)' : 'var(--ink)',
         }}>{display}</span>
         {mask && (
           <button onClick={() => setRevealed(r => !r)} style={{
             background: 'transparent', border: '1px solid var(--line)', color: 'var(--ink-dim)',
             fontFamily: 'var(--font-mono)', fontSize: 9, padding: '2px 7px',
-            letterSpacing: '0.14em', textTransform: 'uppercase', cursor: 'pointer',
+            letterSpacing: '0.14em', textTransform: 'uppercase', cursor: 'pointer', flexShrink: 0,
           }}>{revealed ? 'hide' : 'reveal'}</button>
         )}
         <button onClick={copy} style={{
           background: 'transparent', border: '1px solid var(--line)', color: 'var(--gold)',
           fontFamily: 'var(--font-mono)', fontSize: 9, padding: '2px 7px',
-          letterSpacing: '0.14em', textTransform: 'uppercase', cursor: 'pointer',
+          letterSpacing: '0.14em', textTransform: 'uppercase', cursor: 'pointer', flexShrink: 0,
         }}>{copied ? '✓' : 'copy'}</button>
       </div>
+    </div>
+  )
+}
+
+function SectionHeader({ label }: { label: string }) {
+  return (
+    <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 12 }}>
+      <span style={{ fontFamily: 'var(--font-mono)', fontSize: 9, color: 'var(--gold)', letterSpacing: '0.3em' }}>──</span>
+      <span style={{ fontFamily: 'var(--font-mono)', fontSize: 10, color: 'var(--gold)', letterSpacing: '0.28em', textTransform: 'uppercase', fontWeight: 700 }}>{label}</span>
+      <span style={{ flex: 1, height: 1, background: 'var(--line-soft)' }} />
     </div>
   )
 }
@@ -79,7 +94,7 @@ export default function WalletOverlay() {
           sk: randHex(64),
           vk: randHex(64),
           did: 'did:zcash:mainnet:zauth1' + randHex(58),
-          seed: ['arrow','silk','copper','tower','viper','onyx','grain','hollow','bramble','quartz','meridian','obscura'],
+          seed: ['arrow', 'silk', 'copper', 'tower', 'viper', 'onyx', 'grain', 'hollow', 'bramble', 'quartz', 'meridian', 'obscura'],
         })
         setPhase('done')
       }
@@ -88,79 +103,92 @@ export default function WalletOverlay() {
 
   return (
     <div style={{ display: 'grid', gridTemplateColumns: '1.2fr 0.8fr', gap: 20 }}>
-      {/* Left: generator */}
-      <div className="zs-card" style={{ padding: 24, minHeight: 460 }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 18 }}>
-          <div className="label-gold">⟶ key ceremony</div>
-          <div className="micro">SEED · 256 BIT</div>
-        </div>
 
-        {/* Entropy grid */}
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 6, marginBottom: 20 }}>
-          {entropy.map((e, i) => (
-            <div key={i} style={{
-              padding: '8px 10px', border: '1px solid var(--line)',
-              fontFamily: 'var(--font-mono)', fontSize: 10,
-              color: phase === 'idle' ? 'var(--ink-mute)' : 'var(--gold)',
-              background: phase === 'generating' ? 'rgba(244,183,40,0.05)' : 'transparent',
-              transition: 'background .3s',
-            }}>0x{e}</div>
-          ))}
-        </div>
+      {/* Left: key ceremony */}
+      <div style={{ display: 'grid', gap: 20 }}>
 
-        {/* Steps */}
-        {phase === 'generating' && (
-          <div style={{ marginBottom: 20 }}>
-            {STEPS.map((s, i) => (
+        {/* Entropy header */}
+        <div>
+          <SectionHeader label="key ceremony · entropy" />
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 5 }}>
+            {entropy.map((e, i) => (
               <div key={i} style={{
-                display: 'flex', alignItems: 'center', gap: 10,
-                padding: '5px 0', fontFamily: 'var(--font-mono)', fontSize: 11,
-                color: i < progress ? 'var(--ok)' : i === progress ? 'var(--gold)' : 'var(--ink-mute)',
-              }}>
-                <span>{i < progress ? '✓' : i === progress ? '⟳' : '·'}</span>
-                <span>{s}</span>
-              </div>
+                padding: '7px 10px', border: '1px solid var(--line)',
+                fontFamily: 'var(--font-mono)', fontSize: 10,
+                color: phase === 'idle' ? 'var(--ink-mute)' : 'var(--gold)',
+                background: phase === 'generating' ? 'rgba(244,183,40,0.05)' : 'transparent',
+                transition: 'color .2s, background .3s',
+              }}>0x{e}</div>
             ))}
           </div>
+        </div>
+
+        {/* Ceremony progress */}
+        {phase !== 'idle' && (
+          <div>
+            <SectionHeader label="ceremony log" />
+            <div style={{ border: '1px solid var(--line)', overflow: 'hidden' }}>
+              {STEPS.map((s, i) => (
+                <div key={i} style={{
+                  display: 'flex', alignItems: 'center', gap: 10,
+                  padding: '8px 12px',
+                  borderBottom: i < STEPS.length - 1 ? '1px solid var(--line-soft)' : undefined,
+                  fontFamily: 'var(--font-mono)', fontSize: 11,
+                  color: i < progress ? 'var(--ok)' : i === progress ? 'var(--gold)' : 'var(--ink-mute)',
+                }}>
+                  <span style={{ flexShrink: 0, width: 14 }}>
+                    {i < progress ? '✓' : i === progress ? '⟳' : '·'}
+                  </span>
+                  <span>{s}</span>
+                </div>
+              ))}
+            </div>
+          </div>
         )}
 
+        {/* Results */}
         {phase === 'done' && wallet && (
-          <div style={{ display: 'grid', gap: 12 }}>
-            <Field label="z-address (zauth1 · demo)" value={wallet.address} mono primary />
-            <Field label="did:zcash identifier" value={wallet.did} mono />
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
-              <Field label="spending key (private)" value={'0x' + wallet.sk} mono mask />
-              <Field label="viewing key" value={'0x' + wallet.vk} mono />
-            </div>
-            <div>
-              <div className="micro" style={{ marginBottom: 6 }}>seed phrase · 12 words</div>
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 5 }}>
-                {wallet.seed.map((w, i) => (
-                  <div key={i} style={{
-                    padding: '8px 10px', border: '1px solid var(--line)',
-                    fontFamily: 'var(--font-mono)', fontSize: 12, color: 'var(--ink)',
-                    position: 'relative',
-                  }}>
-                    <span style={{ position: 'absolute', top: 3, right: 5, fontSize: 8, color: 'var(--ink-mute)' }}>{String(i + 1).padStart(2, '0')}</span>
-                    {w}
-                  </div>
-                ))}
+          <div>
+            <SectionHeader label="generated keys" />
+            <div style={{ display: 'grid', gap: 10 }}>
+              <CopyField label="z-address (zauth1 · demo)" value={wallet.address} highlight />
+              <CopyField label="did:zcash identifier" value={wallet.did} />
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
+                <CopyField label="spending key (private)" value={'0x' + wallet.sk} mask />
+                <CopyField label="viewing key" value={'0x' + wallet.vk} />
+              </div>
+              <div>
+                <div style={{ fontFamily: 'var(--font-mono)', fontSize: 9, color: 'var(--ink-mute)', letterSpacing: '0.26em', textTransform: 'uppercase', marginBottom: 8 }}>seed phrase · 12 words</div>
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 4 }}>
+                  {wallet.seed.map((w, i) => (
+                    <div key={i} style={{
+                      padding: '7px 10px', border: '1px solid var(--line)',
+                      fontFamily: 'var(--font-mono)', fontSize: 12, color: 'var(--ink)',
+                      position: 'relative',
+                    }}>
+                      <span style={{ position: 'absolute', top: 3, right: 5, fontSize: 8, color: 'var(--ink-mute)' }}>{String(i + 1).padStart(2, '0')}</span>
+                      {w}
+                    </div>
+                  ))}
+                </div>
               </div>
             </div>
           </div>
         )}
 
-        <div style={{ marginTop: 20, display: 'flex', gap: 10, justifyContent: 'space-between', alignItems: 'center', paddingTop: 18, borderTop: '1px solid var(--line-soft)' }}>
-          <div className="micro">
-            {phase === 'idle' && 'awaiting entropy'}
-            {phase === 'generating' && 'ceremony in progress'}
-            {phase === 'done' && '✓ ephemeral · in-memory only'}
-          </div>
+        {/* Action bar */}
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', paddingTop: 16, borderTop: '1px solid var(--line-soft)' }}>
+          <span style={{ fontFamily: 'var(--font-mono)', fontSize: 10, color: 'var(--ink-mute)', letterSpacing: '0.18em', textTransform: 'uppercase' }}>
+            {phase === 'idle' && '> awaiting entropy'}
+            {phase === 'generating' && '> ceremony in progress'}
+            {phase === 'done' && '> ephemeral · in-memory only'}
+          </span>
           <button
             onClick={generate}
             disabled={phase === 'generating'}
             style={{
-              padding: '12px 22px', background: 'linear-gradient(180deg,var(--gold),var(--gold-deep))',
+              padding: '10px 20px',
+              background: 'linear-gradient(180deg, var(--gold), var(--gold-deep))',
               color: '#0a0700', fontFamily: 'var(--font-mono)', fontWeight: 700, fontSize: 12,
               letterSpacing: '0.08em', textTransform: 'uppercase', border: 'none', cursor: 'pointer',
               clipPath: 'polygon(0 0,calc(100% - 10px) 0,100% 10px,100% 100%,10px 100%,0 calc(100% - 10px))',
@@ -173,40 +201,51 @@ export default function WalletOverlay() {
       </div>
 
       {/* Right: info */}
-      <div style={{ display: 'grid', gap: 16, gridTemplateRows: 'auto 1fr' }}>
-        <div className="zs-card" style={{ padding: 20 }}>
-          <div className="label-gold" style={{ marginBottom: 12 }}>what happens here</div>
-          <ul style={{ listStyle: 'none', padding: 0, margin: 0, display: 'grid', gap: 8, fontFamily: 'var(--font-mono)', fontSize: 11, color: 'var(--ink-dim)', lineHeight: 1.6 }}>
+      <div style={{ display: 'grid', gap: 20, alignContent: 'start' }}>
+        <div>
+          <SectionHeader label="what happens" />
+          <div style={{ border: '1px solid var(--line)', overflow: 'hidden' }}>
             {[
-              ['Ed25519 keypair', 'generated via crypto.getRandomValues()'],
-              ['bech32m address', 'encoded with zauth1 prefix (demo)'],
+              ['Ed25519 keypair', 'crypto.getRandomValues() — browser only'],
+              ['bech32m address', 'zauth1 prefix (demo encoding)'],
               ['did:zcash DID', 'W3C DID v1.1 compliant identifier'],
-              ['private key', 'stays in browser — never transmitted'],
-            ].map(([k, v], i) => (
-              <li key={i}>→ <span style={{ color: 'var(--gold)' }}>{k}</span> {v}</li>
+              ['private key', 'never transmitted — stays in browser'],
+            ].map(([k, v], i, arr) => (
+              <div key={i} style={{
+                display: 'grid', gridTemplateColumns: '1fr',
+                padding: '9px 12px',
+                borderBottom: i < arr.length - 1 ? '1px solid var(--line-soft)' : undefined,
+              }}>
+                <span style={{ fontFamily: 'var(--font-mono)', fontSize: 11, color: 'var(--gold)', marginBottom: 2 }}>→ {k}</span>
+                <span style={{ fontFamily: 'var(--font-mono)', fontSize: 10, color: 'var(--ink-mute)' }}>{v}</span>
+              </div>
             ))}
-          </ul>
+          </div>
         </div>
-        <div className="zs-card" style={{ padding: 20 }}>
-          <div className="label-gold" style={{ marginBottom: 10 }}>ready to use your wallet?</div>
-          <p style={{ fontFamily: 'var(--font-mono)', fontSize: 11, color: 'var(--ink-mute)', lineHeight: 1.7, marginBottom: 14 }}>
-            Click Sign In to authenticate with your Zcash address. The server will send a challenge — your wallet signs it, proving ownership.
-          </p>
-          <Link
-            href="/login"
-            style={{
-              display: 'inline-flex', alignItems: 'center', gap: 8,
-              padding: '10px 18px',
-              background: 'linear-gradient(180deg,var(--gold),var(--gold-deep))',
-              color: '#0a0700', fontFamily: 'var(--font-mono)', fontWeight: 700, fontSize: 11,
-              letterSpacing: '0.1em', textTransform: 'uppercase',
-              clipPath: 'polygon(0 0,calc(100% - 8px) 0,100% 8px,100% 100%,8px 100%,0 calc(100% - 8px))',
-            }}
-          >
-            → Sign in with Zcash
-          </Link>
+
+        <div>
+          <SectionHeader label="next step" />
+          <div style={{ border: '1px solid var(--line)', padding: '16px 14px' }}>
+            <p style={{ fontFamily: 'var(--font-mono)', fontSize: 11, color: 'var(--ink-mute)', lineHeight: 1.7, marginBottom: 14, marginTop: 0 }}>
+              Sign in with your Zcash address. The server sends a challenge — your wallet signs it to prove ownership.
+            </p>
+            <Link
+              href="/login"
+              style={{
+                display: 'inline-flex', alignItems: 'center', gap: 8,
+                padding: '9px 16px',
+                background: 'linear-gradient(180deg, var(--gold), var(--gold-deep))',
+                color: '#0a0700', fontFamily: 'var(--font-mono)', fontWeight: 700, fontSize: 11,
+                letterSpacing: '0.1em', textTransform: 'uppercase',
+                clipPath: 'polygon(0 0,calc(100% - 8px) 0,100% 8px,100% 100%,8px 100%,0 calc(100% - 8px))',
+              }}
+            >
+              → Sign in with Zcash
+            </Link>
+          </div>
         </div>
       </div>
+
     </div>
   )
 }

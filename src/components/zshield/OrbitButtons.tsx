@@ -96,7 +96,7 @@ export default function OrbitButtons({ onAction, signingState }: Props) {
           padding:3px; border:none; cursor:pointer; pointer-events:auto;
           clip-path:${NOTCHED_CLIP};
           filter:drop-shadow(0 8px 18px rgba(0,0,0,0.7)) drop-shadow(0 0 14px rgba(184,108,42,0.4));
-          opacity:0; min-width:280px;
+          opacity:0; min-width:360px;
           transition:transform .25s cubic-bezier(.2,.8,.2,1), filter .3s;
           animation:zs-orbit-in .8s cubic-bezier(.2,.8,.2,1) forwards, zs-spin-border 5s linear infinite;
         }
@@ -115,7 +115,8 @@ export default function OrbitButtons({ onAction, signingState }: Props) {
           filter:drop-shadow(0 14px 30px rgba(0,0,0,0.8)) drop-shadow(0 0 44px rgba(255,216,102,1));
         }
         @keyframes zs-spin-border { to { --zs-angle:360deg; } }
-        @media (max-width:1200px){.zs-orbit-btn{min-width:220px;}}
+        @media (max-width:1200px){.zs-orbit-btn{min-width:280px;}}
+        @media (max-width:900px){.zs-orbit-btn{min-width:220px;}}
         @media (max-width:820px){.zs-orbit-btn{min-width:0;}}
       `}</style>
 
@@ -206,8 +207,8 @@ export default function OrbitButtons({ onAction, signingState }: Props) {
               <span style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start', gap: 4, lineHeight: 1.1, flex: 1 }}>
                 <span style={{
                   fontFamily: 'var(--font-mono)', fontSize: 18, letterSpacing: '0.14em',
-                  textTransform: 'uppercase', fontWeight: 500,
-                  color: isPrimary ? '#0a0700' : 'var(--ink)',
+                  textTransform: 'uppercase', fontWeight: isPrimary ? 800 : 600,
+                  color: isPrimary ? '#0a0700' : '#ffffff',
                 }}>
                   {labelText}
                 </span>

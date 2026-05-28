@@ -2,7 +2,13 @@
 
 import Image from 'next/image'
 
-export default function MetalShield() {
+interface Props {
+  split?: boolean
+}
+
+const MASK = 'radial-gradient(ellipse 70% 82% at 50% 52%, black 38%, transparent 100%)'
+
+export default function MetalShield({ split = false }: Props) {
   return (
     <div style={{
       position: 'relative',
@@ -31,25 +37,53 @@ export default function MetalShield() {
         pointerEvents: 'none',
       }} />
 
-      {/* Shield image */}
+      {/* Shield image — split into left/right halves */}
       <div style={{
         position: 'relative',
         width: '76%', height: '76%',
         animation: 'zs-float 4.2s ease-in-out infinite',
         filter: 'drop-shadow(0 0 32px rgba(244,183,40,0.38)) drop-shadow(0 0 70px rgba(190,90,8,0.18)) drop-shadow(0 0 6px rgba(255,220,100,0.55))',
       }}>
-        <Image
-          src="/zshield-logo.png"
-          alt="ZShield"
-          fill
-          style={{
-            objectFit: 'contain',
-            mixBlendMode: 'lighten',
-            maskImage: 'radial-gradient(ellipse 70% 82% at 50% 52%, black 38%, transparent 100%)',
-            WebkitMaskImage: 'radial-gradient(ellipse 70% 82% at 50% 52%, black 38%, transparent 100%)',
-          }}
-          priority
-        />
+        {/* Left half */}
+        <div style={{
+          position: 'absolute', inset: 0,
+          clipPath: 'inset(0 50% 0 0)',
+          transform: split ? 'translateX(-52px)' : 'translateX(0)',
+          transition: 'transform 0.7s cubic-bezier(0.4, 0, 0.2, 1)',
+        }}>
+          <Image
+            src="/zshield-logo.png"
+            alt="ZShield left"
+            fill
+            style={{
+              objectFit: 'contain',
+              mixBlendMode: 'lighten',
+              maskImage: MASK,
+              WebkitMaskImage: MASK,
+            }}
+            priority
+          />
+        </div>
+        {/* Right half */}
+        <div style={{
+          position: 'absolute', inset: 0,
+          clipPath: 'inset(0 0 0 50%)',
+          transform: split ? 'translateX(52px)' : 'translateX(0)',
+          transition: 'transform 0.7s cubic-bezier(0.4, 0, 0.2, 1)',
+        }}>
+          <Image
+            src="/zshield-logo.png"
+            alt="ZShield right"
+            fill
+            style={{
+              objectFit: 'contain',
+              mixBlendMode: 'lighten',
+              maskImage: MASK,
+              WebkitMaskImage: MASK,
+            }}
+            priority
+          />
+        </div>
       </div>
 
       {/* Shadow below shield */}

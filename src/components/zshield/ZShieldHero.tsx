@@ -46,29 +46,29 @@ function SystemHUD() {
       zIndex: 30, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 6,
     }}>
       <div style={{
-        display: 'inline-flex', alignItems: 'center', gap: 12,
-        padding: '9px 20px 9px 16px',
+        display: 'inline-flex', alignItems: 'center', gap: 14,
+        padding: '12px 26px 12px 20px',
         background: 'rgba(8,6,2,0.82)',
         border: '1px solid var(--gold)',
         backdropFilter: 'blur(8px)',
         clipPath: 'polygon(0 0, calc(100% - 12px) 0, 100% 12px, 100% 100%, 12px 100%, 0 calc(100% - 12px))',
         boxShadow: '0 0 0 1px rgba(0,0,0,0.5), 0 0 22px rgba(244,183,40,0.3)',
       }}>
-        <span className="zs-dot" style={{ width: 7, height: 7 }} />
+        <span className="zs-dot" style={{ width: 9, height: 9 }} />
         <span style={{
-          fontFamily: 'var(--font-mono)', fontSize: 11,
+          fontFamily: 'var(--font-mono)', fontSize: 14,
           color: 'var(--gold-bright)', letterSpacing: '0.32em', textTransform: 'uppercase', fontWeight: 600,
         }}>system online</span>
-        <span style={{ width: 1, height: 11, background: 'var(--line)' }} />
+        <span style={{ width: 1, height: 14, background: 'var(--line)' }} />
         <span style={{
-          fontFamily: 'var(--font-mono)', fontSize: 9,
+          fontFamily: 'var(--font-mono)', fontSize: 12,
           color: 'var(--ink-mute)', letterSpacing: '0.22em', textTransform: 'uppercase',
         }}>shielded · v0.8.4</span>
       </div>
       <div style={{
-        fontFamily: 'var(--font-mono)', fontSize: 9, color: 'var(--ink-mute)',
+        fontFamily: 'var(--font-mono)', fontSize: 12, color: 'var(--ink-mute)',
         letterSpacing: '0.26em', textTransform: 'uppercase',
-        display: 'flex', gap: 12,
+        display: 'flex', gap: 14,
       }}>
         <span>block {block.toLocaleString()}</span>
         <span style={{ color: 'var(--gold)' }}>·</span>
@@ -232,12 +232,12 @@ export default function ZShieldHero() {
           {/* Shield — closer to camera, moves more against cursor */}
           <div style={{
             position: 'relative',
-            height: 'min(76vh, 700px)', width: 'min(44vmin, 580px)',
+            height: 'min(99vh, 910px)', width: 'min(57vmin, 754px)',
             zIndex: 2,
             transform: 'translate3d(calc(var(--mx) * -22px), calc(var(--my) * -14px), 0)',
             transition: 'transform .12s linear',
           }}>
-            <MetalShield />
+            <MetalShield split={overlay !== null} />
           </div>
 
           {/* Orbit buttons */}

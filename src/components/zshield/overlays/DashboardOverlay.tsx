@@ -3,39 +3,50 @@
 import { useMemo } from 'react'
 
 const PROVEN = [
-  { label: 'Address ownership', desc: 'You control this Zcash address via cryptographic signature' },
-  { label: 'ZEC holder ≥ 1.0', desc: 'Hold ZEC without revealing your balance' },
-  { label: 'Active user', desc: 'You transacted recently on the Zcash network' },
+  { label: 'Address ownership',  note: 'Cryptographic signature over server nonce' },
+  { label: 'ZEC holder ≥ 1.0',   note: 'Shielded balance threshold — exact amount hidden' },
+  { label: 'Active user',         note: 'Transaction in last 30 days — details hidden' },
 ]
 
 const HIDDEN = [
-  'Your real-world identity',
-  'Your exact ZEC balance',
-  'Your transaction history',
-  'Your email, phone, or IP',
-  'Links between your addresses',
+  'Real-world identity',
+  'Exact ZEC balance',
+  'Transaction history',
+  'Email, phone, or IP address',
+  'Links between addresses',
 ]
 
-const TIMELINE = [
-  { step: 'Wallet signed a nonce', detail: 'Server sent a random challenge → wallet signed with private key → server verified' },
-  { step: 'DID created', detail: 'did:zcash:mainnet:address → resolves to W3C DID Document with your public key' },
-  { step: 'ZK claims resolved', detail: 'Proved you hold ZEC and are active — balance stays private via shielded pool' },
-  { step: 'OIDC token issued', detail: 'Standard JWT signed with EdDSA — any OAuth2 app can verify via JWKS endpoint' },
+const FLOW = [
+  { n: '01', step: 'Challenge issued',  detail: 'Server generates a one-time random nonce' },
+  { n: '02', step: 'Wallet signed',     detail: 'Private key signs nonce via ZIP 304 (Ed25519 demo)' },
+  { n: '03', step: 'DID resolved',      detail: 'did:zcash:mainnet:<addr> → W3C DID Document' },
+  { n: '04', step: 'ZK claims proved',  detail: 'Balance + activity confirmed — data stays shielded' },
+  { n: '05', step: 'JWT issued',        detail: 'EdDSA-signed token — verifiable via JWKS endpoint' },
 ]
+
+const DID = 'did:zcash:mainnet:zauth1a8f3c9d2e1b47596f0a3c8e1d4b27f90e8c4a'
+
+function SectionHeader({ label }: { label: string }) {
+  return (
+    <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 12 }}>
+      <span style={{ fontFamily: 'var(--font-mono)', fontSize: 9, color: 'var(--gold)', letterSpacing: '0.3em' }}>──</span>
+      <span style={{ fontFamily: 'var(--font-mono)', fontSize: 10, color: 'var(--gold)', letterSpacing: '0.28em', textTransform: 'uppercase', fontWeight: 700 }}>{label}</span>
+      <span style={{ flex: 1, height: 1, background: 'var(--line-soft)' }} />
+    </div>
+  )
+}
 
 export default function DashboardOverlay() {
-  const did = 'did:zcash:mainnet:zauth1a8f3c9d2e1b47596f0a3c8e1d4b27f90e8c4a'
-
   const didDoc = JSON.stringify({
-    '@context': ['https://www.w3.org/ns/did/v1','https://w3id.org/security/suites/zcash-2024/v1'],
-    id: did,
+    '@context': ['https://www.w3.org/ns/did/v1', 'https://w3id.org/security/suites/zcash-2024/v1'],
+    id: DID,
     verificationMethod: [{
-      id: did + '#key-1', type: 'ZcashShieldedKey2024',
-      controller: did,
+      id: DID + '#key-1', type: 'ZcashShieldedKey2024',
+      controller: DID,
       publicKeyMultibase: 'z6Mkf4a3c9d2e1b47596f0a3c8e1d4b27f90e8c4a',
     }],
-    authentication: [did + '#key-1'],
-    service: [{ id: did + '#oidc', type: 'OIDCProvider', serviceEndpoint: 'https://zshield.vercel.app/api/oidc' }],
+    authentication: [DID + '#key-1'],
+    service: [{ id: DID + '#oidc', type: 'OIDCProvider', serviceEndpoint: 'https://zshield.vercel.app/api/oidc' }],
   }, null, 2)
 
   const chartBars = useMemo(() => Array.from({ length: 48 }, (_, i) => {
@@ -44,82 +55,76 @@ export default function DashboardOverlay() {
   }), [])
 
   return (
-    <div style={{ display: 'grid', gap: 20 }}>
+    <div style={{ display: 'grid', gap: 24 }}>
+
       {/* Identity header */}
-      <div className="zs-card" style={{ padding: '20px 24px', display: 'grid', gridTemplateColumns: 'auto 1fr auto', gap: 20, alignItems: 'center' }}>
-        <div style={{
-          width: 52, height: 52, borderRadius: '50%',
-          background: 'radial-gradient(circle at 40% 35%, #ffd866, #c8941b)',
-          display: 'flex', alignItems: 'center', justifyContent: 'center',
-          fontFamily: 'var(--font-mono)', fontSize: 24, fontWeight: 800, color: '#0a0700',
-          flexShrink: 0,
-        }}>Z</div>
+      <div style={{ border: '1px solid var(--line)', padding: '16px 20px', display: 'grid', gridTemplateColumns: '1fr auto', gap: 16, alignItems: 'center' }}>
         <div>
-          <div className="label-gold" style={{ marginBottom: 5 }}>↳ verified identity · session active</div>
-          <div style={{ fontFamily: 'var(--font-mono)', fontSize: 13, color: 'var(--gold-bright)' }}>
-            {did.slice(0, 30)}<span style={{ color: 'var(--ink-mute)' }}>…</span>{did.slice(-10)}
+          <div style={{ fontFamily: 'var(--font-mono)', fontSize: 10, color: 'var(--ink-mute)', letterSpacing: '0.24em', textTransform: 'uppercase', marginBottom: 6 }}>
+            verified identity
+          </div>
+          <div style={{ fontFamily: 'var(--font-mono)', fontSize: 13, color: 'var(--gold-bright)', wordBreak: 'break-all' }}>
+            {DID.slice(0, 32)}<span style={{ color: 'var(--ink-mute)' }}>…</span>{DID.slice(-10)}
           </div>
         </div>
-        <div style={{ textAlign: 'right' }}>
-          <div style={{ fontFamily: 'var(--font-mono)', fontSize: 10, color: 'var(--ok)', letterSpacing: '0.2em' }}>● ONLINE</div>
-          <div style={{ fontFamily: 'var(--font-mono)', fontSize: 9, color: 'var(--ink-mute)', letterSpacing: '0.18em', marginTop: 2 }}>DEMO SESSION</div>
+        <div style={{ textAlign: 'right', flexShrink: 0 }}>
+          <div style={{ fontFamily: 'var(--font-mono)', fontSize: 10, color: 'var(--ok)', letterSpacing: '0.22em' }}>● ONLINE</div>
+          <div style={{ fontFamily: 'var(--font-mono)', fontSize: 9, color: 'var(--ink-mute)', letterSpacing: '0.18em', marginTop: 3 }}>DEMO SESSION</div>
         </div>
       </div>
 
-      {/* Proven vs Hidden */}
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
-        <div className="zs-card" style={{ padding: 20 }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 14 }}>
-            <span style={{ width: 8, height: 8, borderRadius: '50%', background: 'var(--ok)', display: 'inline-block' }} />
-            <span style={{ fontFamily: 'var(--font-mono)', fontSize: 10, color: 'var(--ok)', letterSpacing: '0.28em', textTransform: 'uppercase' }}>Proven</span>
+      {/* Proven / Hidden */}
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 14 }}>
+        <div>
+          <SectionHeader label="proven" />
+          <div style={{ display: 'grid', gap: 1, border: '1px solid var(--line)', overflow: 'hidden' }}>
+            {PROVEN.map((p, i) => (
+              <div key={i} style={{ padding: '10px 12px', borderBottom: i < PROVEN.length - 1 ? '1px solid var(--line-soft)' : undefined, display: 'flex', gap: 10, alignItems: 'flex-start' }}>
+                <span style={{ color: 'var(--ok)', fontSize: 12, flexShrink: 0, marginTop: 1 }}>✓</span>
+                <div>
+                  <div style={{ fontFamily: 'var(--font-mono)', fontSize: 12, color: 'var(--ink)', fontWeight: 500 }}>{p.label}</div>
+                  <div style={{ fontFamily: 'var(--font-mono)', fontSize: 10, color: 'var(--ink-mute)', marginTop: 2, lineHeight: 1.5 }}>{p.note}</div>
+                </div>
+              </div>
+            ))}
           </div>
-          {PROVEN.map((p, i) => (
-            <div key={i} style={{ display: 'flex', alignItems: 'flex-start', gap: 8, marginBottom: 10 }}>
-              <span style={{ color: 'var(--ok)', fontSize: 12, marginTop: 1, flexShrink: 0 }}>✓</span>
-              <div>
-                <div style={{ fontSize: 13, color: 'var(--ink)', fontWeight: 500 }}>{p.label}</div>
-                <div style={{ fontFamily: 'var(--font-mono)', fontSize: 10, color: 'var(--ink-mute)', marginTop: 2 }}>{p.desc}</div>
+        </div>
+        <div>
+          <SectionHeader label="never revealed" />
+          <div style={{ border: '1px solid var(--line)', overflow: 'hidden' }}>
+            {HIDDEN.map((h, i) => (
+              <div key={i} style={{ padding: '10px 12px', borderBottom: i < HIDDEN.length - 1 ? '1px solid var(--line-soft)' : undefined, display: 'flex', gap: 10, alignItems: 'center' }}>
+                <span style={{ color: 'var(--ink-mute)', fontSize: 11, flexShrink: 0 }}>✗</span>
+                <span style={{ fontFamily: 'var(--font-mono)', fontSize: 12, color: 'var(--ink-mute)' }}>{h}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+
+      {/* Auth flow */}
+      <div>
+        <SectionHeader label="auth flow" />
+        <div style={{ border: '1px solid var(--line)', overflow: 'hidden' }}>
+          {FLOW.map((f, i) => (
+            <div key={i} style={{
+              display: 'grid', gridTemplateColumns: '42px 1fr',
+              borderBottom: i < FLOW.length - 1 ? '1px solid var(--line-soft)' : undefined,
+            }}>
+              <span style={{ padding: '10px 12px', fontFamily: 'var(--font-mono)', fontSize: 10, color: 'var(--gold)', fontWeight: 700, borderRight: '1px solid var(--line-soft)' }}>{f.n}</span>
+              <div style={{ padding: '9px 14px' }}>
+                <div style={{ fontFamily: 'var(--font-mono)', fontSize: 12, color: 'var(--ink)', fontWeight: 500 }}>{f.step}</div>
+                <div style={{ fontFamily: 'var(--font-mono)', fontSize: 10, color: 'var(--ink-mute)', marginTop: 2, lineHeight: 1.5 }}>{f.detail}</div>
               </div>
             </div>
           ))}
         </div>
-        <div className="zs-card" style={{ padding: 20 }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 14 }}>
-            <span style={{ width: 8, height: 8, borderRadius: '50%', background: 'var(--ink-mute)', display: 'inline-block' }} />
-            <span style={{ fontFamily: 'var(--font-mono)', fontSize: 10, color: 'var(--ink-mute)', letterSpacing: '0.28em', textTransform: 'uppercase' }}>Never revealed</span>
-          </div>
-          {HIDDEN.map((h, i) => (
-            <div key={i} style={{ display: 'flex', alignItems: 'flex-start', gap: 8, marginBottom: 10 }}>
-              <span style={{ color: 'var(--ink-mute)', fontSize: 12, marginTop: 1 }}>✗</span>
-              <span style={{ fontSize: 13, color: 'var(--ink-mute)' }}>{h}</span>
-            </div>
-          ))}
-        </div>
-      </div>
-
-      {/* Timeline */}
-      <div className="zs-card" style={{ padding: 20 }}>
-        <div className="label-gold" style={{ marginBottom: 16 }}>what just happened</div>
-        {TIMELINE.map((t, i) => (
-          <div key={i} style={{ display: 'flex', gap: 14, marginBottom: i < TIMELINE.length - 1 ? 14 : 0 }}>
-            <div style={{
-              width: 22, height: 22, borderRadius: '50%',
-              background: 'rgba(77,255,179,0.12)', border: '1px solid rgba(77,255,179,0.35)',
-              color: 'var(--ok)', display: 'flex', alignItems: 'center', justifyContent: 'center',
-              fontFamily: 'var(--font-mono)', fontSize: 10, fontWeight: 700, flexShrink: 0, marginTop: 1,
-            }}>{i + 1}</div>
-            <div>
-              <div style={{ fontSize: 13, color: 'var(--ink)', fontWeight: 500 }}>{t.step}</div>
-              <div style={{ fontFamily: 'var(--font-mono)', fontSize: 10, color: 'var(--ink-mute)', marginTop: 3, lineHeight: 1.6 }}>{t.detail}</div>
-            </div>
-          </div>
-        ))}
       </div>
 
       {/* Activity chart */}
-      <div className="zs-card" style={{ padding: 20 }}>
-        <div className="label-gold" style={{ marginBottom: 14 }}>proof timeline · demo</div>
-        <div style={{ display: 'grid', gridTemplateColumns: `repeat(${chartBars.length}, 1fr)`, gap: 2, alignItems: 'end', height: 80 }}>
+      <div>
+        <SectionHeader label="proof timeline · demo" />
+        <div style={{ display: 'grid', gridTemplateColumns: `repeat(${chartBars.length}, 1fr)`, gap: 2, alignItems: 'end', height: 60 }}>
           {chartBars.map((b, i) => (
             <div key={i} style={{
               height: `${b * 100}%`,
@@ -128,28 +133,32 @@ export default function DashboardOverlay() {
             }} />
           ))}
         </div>
-        <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: 8 }}>
-          {['00:00','06:00','12:00','18:00','now'].map(t => (
+        <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: 6 }}>
+          {['00:00', '06:00', '12:00', '18:00', 'now'].map(t => (
             <span key={t} style={{ fontFamily: 'var(--font-mono)', fontSize: 9, color: 'var(--ink-mute)', letterSpacing: '0.14em' }}>{t}</span>
           ))}
         </div>
       </div>
 
-      {/* DID doc */}
-      <details style={{ border: '1px solid var(--line)', background: 'rgba(244,183,40,0.02)' }}>
-        <summary style={{
-          padding: '14px 18px', cursor: 'pointer', color: 'var(--ink)',
-          fontFamily: 'var(--font-mono)', fontSize: 12, letterSpacing: '0.14em', textTransform: 'uppercase',
-          userSelect: 'none', listStyle: 'none',
-        }}>
-          → DID Document · W3C standard
-        </summary>
-        <pre style={{
-          margin: 0, padding: '0 18px 18px',
-          fontFamily: 'var(--font-mono)', fontSize: 11, color: 'var(--ink-dim)',
-          overflow: 'auto', maxHeight: 220, background: 'transparent',
-        }}>{didDoc}</pre>
-      </details>
+      {/* DID Document */}
+      <div>
+        <SectionHeader label="did document · w3c" />
+        <details style={{ border: '1px solid var(--line)' }}>
+          <summary style={{
+            padding: '11px 14px', cursor: 'pointer',
+            fontFamily: 'var(--font-mono)', fontSize: 11, color: 'var(--ink)', letterSpacing: '0.12em',
+            userSelect: 'none', listStyle: 'none',
+          }}>
+            <span style={{ color: 'var(--gold)' }}>▶</span> did:zcash:mainnet:zauth1…
+          </summary>
+          <pre style={{
+            margin: 0, padding: '0 14px 14px',
+            fontFamily: 'var(--font-mono)', fontSize: 11, color: 'var(--ink-dim)',
+            overflow: 'auto', maxHeight: 200, background: 'rgba(0,0,0,0.2)',
+          }}>{didDoc}</pre>
+        </details>
+      </div>
+
     </div>
   )
 }

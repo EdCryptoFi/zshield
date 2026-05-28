@@ -115,9 +115,9 @@ export default function OrbitButtons({ onAction, signingState }: Props) {
           filter:drop-shadow(0 14px 30px rgba(0,0,0,0.8)) drop-shadow(0 0 44px rgba(255,216,102,1));
         }
         @keyframes zs-spin-border { to { --zs-angle:360deg; } }
-        @media (max-width:1200px){.zs-orbit-btn{min-width:280px;}}
-        @media (max-width:900px){.zs-orbit-btn{min-width:220px;}}
-        @media (max-width:820px){.zs-orbit-btn{min-width:0;}}
+        @media (max-width:1200px){.zs-orbit-btn{min-width:260px;}}
+        @media (max-width:900px){.zs-orbit-btn{min-width:180px;}}
+        @media (max-width:640px){.zs-orbit-btn{min-width:0; padding:0;}}
       `}</style>
 
       {/* SVG connecting lines */}

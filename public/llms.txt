@@ -1,0 +1,57 @@
+# ZShield
+
+> Sign in with Zcash. Privacy-first identity for the web — no password, no email, no KYC.
+
+ZShield is an OIDC identity provider that turns any Zcash address into a W3C DID (did:zcash) and issues standard JWT tokens. Built for the ZecHub Hackathon 2026.
+
+Live demo: https://zshield.vercel.app
+Source code: https://github.com/EdCryptoFi/zshield
+Built by: Ed (@EdCriptoFi) — https://x.com/EdCriptoFi
+
+## What ZShield does
+
+- Generates an Ed25519 keypair in the browser (ZIP 304 stand-in for demo)
+- Encodes the public key as a bech32m address with `zauth1` prefix
+- Creates a W3C DID v1.1 document (`did:zcash:mainnet:<address>`)
+- Issues a random nonce; the wallet signs it (challenge-response)
+- Verifies the signature and issues a signed JWT with ZK claims
+- Exposes standard OIDC endpoints so any OAuth2 app can integrate
+
+## OIDC Endpoints
+
+- GET  /.well-known/openid-configuration — discovery document
+- POST /api/challenge                    — issue signing nonce
+- POST /api/verify                       — verify signature, issue JWT
+- POST /api/oidc/token                   — token exchange
+- GET  /api/oidc/userinfo                — address + DID + ZK claims
+- GET  /api/oidc/jwks                    — JWK Set for JWT validation
+
+## Zero-Knowledge Claims
+
+| Claim          | Proves           | Hides               |
+|----------------|------------------|---------------------|
+| zec_holder     | Holds ≥ 1 ZEC    | Exact balance       |
+| active_user    | Transacted ≤ 30d | Transaction details |
+| senior_holder  | Holds ≥ 10 ZEC   | Exact balance       |
+
+## Tech Stack
+
+- Framework: Next.js 16 App Router (TypeScript)
+- Auth: NextAuth v5 beta (Credentials provider)
+- Crypto: @noble/ed25519 (ZIP 304 stand-in)
+- Identity: W3C DID v1.1 · did:zcash method
+- OIDC: Custom bridge (discovery, token, userinfo, JWKS)
+- Token: jose (EdDSA / HS256)
+- Address: bech32m (zauth1 prefix — demo)
+- Deploy: Vercel
+
+## Privacy Policy
+
+ZShield uses only essential session cookies (HttpOnly, Secure) for authentication.
+No tracking cookies. No analytics. No third-party data collection.
+Private keys are generated and stay in the browser — they are never transmitted.
+
+## Hackathon
+
+ZecHub Hackathon 2026 · Track: Zcash Login · Prize pool: 25 ZEC
+Deadline: 2026-07-15

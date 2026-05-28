@@ -129,6 +129,8 @@ export default function OverlayPanel({ open, title, kicker, onClose, children }:
     <div style={{
       position: 'fixed', inset: 0, zIndex: 60,
       pointerEvents: isVisible ? 'auto' : 'none',
+      display: 'flex', alignItems: 'center', justifyContent: 'center',
+      padding: '20px',
     }}>
       {/* Backdrop */}
       <div
@@ -145,7 +147,9 @@ export default function OverlayPanel({ open, title, kicker, onClose, children }:
       {/* Panel */}
       <div
         style={{
-          position:'absolute', inset:'60px 20px 60px 20px',
+          position:'relative', zIndex:1,
+          width: 'min(88vw, 1020px)',
+          height: 'min(84vh, 820px)',
           background:`
             repeating-linear-gradient(90deg,
               rgba(255,255,255,0) 0px, rgba(255,200,120,0.015) 1px, rgba(0,0,0,0) 3px),

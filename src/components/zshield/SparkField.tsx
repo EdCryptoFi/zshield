@@ -32,28 +32,27 @@ export default function SparkField() {
     window.addEventListener('resize', resize)
 
     const spawn = () => {
-      const isWisp = Math.random() < 0.18
+      const isWisp = Math.random() < 0.14
       embers.push({
         x: Math.random() * canvas.width,
         y: canvas.height + 12,
-        vx: (Math.random() - 0.5) * 1.2,
-        vy: -(1.8 + Math.random() * 2.8),
+        vx: (Math.random() - 0.5) * 0.9,
+        vy: -(0.9 + Math.random() * 1.4),
         life: 0,
-        maxLife: 220 + Math.random() * 380,
-        size: isWisp ? 5 + Math.random() * 10 : 1.2 + Math.random() * 3.5,
+        maxLife: 130 + Math.random() * 240,
+        size: isWisp ? 4 + Math.random() * 7 : 1 + Math.random() * 2.8,
         hue: 4 + Math.random() * 34,
         isWisp,
-        fadeStart: 0.45 + Math.random() * 0.5,
+        fadeStart: 0.5 + Math.random() * 0.45,
       })
     }
 
     let animId: number
     const loop = () => {
-      // 9–14 embers per frame for dense fire
-      for (let i = 0; i < 9 + Math.floor(Math.random() * 6); i++) spawn()
+      for (let i = 0; i < 3 + (Math.random() < 0.4 ? 1 : 0); i++) spawn()
 
       ctx.globalCompositeOperation = 'source-over'
-      ctx.fillStyle = 'rgba(5,4,3,0.1)'
+      ctx.fillStyle = 'rgba(5,4,3,0.18)'
       ctx.fillRect(0, 0, canvas.width, canvas.height)
 
       for (let i = embers.length - 1; i >= 0; i--) {

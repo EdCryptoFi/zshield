@@ -170,3 +170,18 @@ button { font-family: inherit; cursor: pointer; }
 .zs-glitch::before,.zs-glitch::after { content:attr(data-text); position:absolute; inset:0; pointer-events:none; }
 .zs-glitch::before { color:var(--gold-bright); transform:translate(1px,-1px); mix-blend-mode:screen; opacity:.5; animation:zs-glitch-a 4s steps(8) infinite; }
 .zs-glitch::after  { color:#ff4d4d; transform:translate(-1px,1px); mix-blend-mode:screen; opacity:.35; animation:zs-glitch-a 5.5s steps(7) infinite reverse; }
+
+/* ── Mobile / responsive ─────────────────────────────────────────── */
+@media (max-width: 768px) {
+  /* Overlay panel: full screen on mobile */
+  .zs-overlay-panel {
+    width: 96vw !important;
+    height: 92vh !important;
+  }
+  /* Overlay content: single column on mobile */
+  .zs-overlay-2col {
+    grid-template-columns: 1fr !important;
+  }
+  /* Cookie banner */
+  .zs-cookie { right: 10px !important; left: 10px !important; max-width: none !important; }
+}

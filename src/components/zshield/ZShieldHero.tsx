@@ -12,9 +12,10 @@ import DashboardOverlay from './overlays/DashboardOverlay'
 import ClaimsOverlay from './overlays/ClaimsOverlay'
 import DocsOverlay from './overlays/DocsOverlay'
 
-// Canvas components load client-only (no SSR) to avoid hydration issues
+// Canvas + video components load client-only to avoid hydration issues
 const SparkField = dynamic(() => import('./SparkField'), { ssr: false })
 const ClickSparks = dynamic(() => import('./ClickSparks'), { ssr: false })
+const VideoBackground = dynamic(() => import('./VideoBackground'), { ssr: false })
 
 import type { ClickSparksHandle } from './ClickSparks'
 
@@ -207,6 +208,9 @@ export default function ZShieldHero() {
           '--mx': '0', '--my': '0',
         } as React.CSSProperties}
       >
+        {/* Video background */}
+        <VideoBackground />
+
         {/* Ambient stack — parallax layers */}
         <div style={{ position: 'absolute', inset: 0, transform: 'translate3d(calc(var(--mx) * 6px), calc(var(--my) * 4px), 0)' }}>
           <AmbientLayers />
@@ -247,6 +251,30 @@ export default function ZShieldHero() {
 
       {/* Click sparks overlay (fixed, fullscreen) */}
       <ClickSparks ref={sparksRef} />
+
+      {/* Footer attribution */}
+      <div style={{
+        position: 'fixed', bottom: 14, left: '50%', transform: 'translateX(-50%)',
+        zIndex: 30, pointerEvents: 'auto',
+      }}>
+        <span style={{
+          fontFamily: 'var(--font-mono)', fontSize: 10,
+          color: 'var(--ink-mute)', letterSpacing: '0.18em',
+          whiteSpace: 'nowrap',
+        }}>
+          built by{' '}
+          <a
+            href="https://x.com/EdCriptoFi"
+            target="_blank"
+            rel="noopener noreferrer"
+            style={{ color: 'var(--gold)', textDecoration: 'underline', textUnderlineOffset: 3 }}
+          >
+            Ed
+          </a>
+          {' '}for the{' '}
+          <span style={{ color: 'var(--gold-bright)' }}>Zcash Hackathon</span>
+        </span>
+      </div>
 
       {/* Info overlay panel */}
       <OverlayPanel

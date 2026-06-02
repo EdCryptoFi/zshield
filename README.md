@@ -47,7 +47,7 @@ ZShield turns any Zcash address into a W3C DID + OIDC identity — no password, 
 ## Local setup
 
 ```bash
-git clone https://github.com/YOUR_ORG/zshield
+git clone https://github.com/EdCryptoFi/zshield
 cd zshield
 npm install
 cp .env.example .env.local
@@ -95,3 +95,9 @@ npm test
 ---
 
 Built for **ZecHub Hackathon 2026** · Track: Zcash Login · Prize pool: 25 ZEC
+
+---
+
+## License
+
+MIT — see [LICENSE](LICENSE)

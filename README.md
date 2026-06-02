@@ -4,7 +4,9 @@
 
 ZShield turns any Zcash address into a W3C DID + OIDC identity — no password, no email, no KYC. Built for the [ZecHub Hackathon 2026](https://zechub.wiki).
 
-🔗 **Live demo:** https://zshield.vercel.app
+🔗 **Live demo:** https://zshield.vercel.app  
+🎥 **Demo video:** https://www.youtube.com/watch?v=xqK69d5gwSA  
+🐦 **Article:** https://x.com/EdCriptoFi/status/2061799056246997273
 
 ---
 
